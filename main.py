@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'onotole'
-printResult = 0
+printResult = 1
 from bs4 import BeautifulSoup
 import re
 import time
@@ -13,8 +13,7 @@ import csv
 import codecs
 
 
-
-def loadHelper(uri):
+def load_helper(uri):
     opener = urllib2.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
     try:
@@ -24,26 +23,29 @@ def loadHelper(uri):
             return soup
         else:
             print "soup is None"
-            loadHelper(uri)
+            load_helper(uri)
     except (timeout, urllib2.HTTPError, urllib2.URLError) as error:
         sys.stdout.write("{} encountered, hold on, bro".format(error))
         sys.stdout.flush()
         time.sleep(30)
-        loadHelper(uri)
+        load_helper(uri)
 
 
-def getNumber(tr):
+def get_number(tr):
     numberItem = int(tr.find("span").get_text()[:-1])
     if printResult: print(numberItem)
     return numberItem
 
-def getMetroStation(tr):
-    td = tr.find("td", attrs={'class':'objects_item_info_col_1'})
-    metroStation = td.find("div", attrs={'class': 'objects_item_metro'}).find("a").get_text()
-    if printResult: print(metroStation)
-    return metroStation
 
-def getMetroDistane(tr):
+def get_metro_station(tr):
+    metro_raw = tr.find('a', attrs={'href': re.compile("metro")})
+    metro_station = metro_raw.get_text()
+    if printResult:
+        print(metro_station)
+    return metro_station
+
+
+def get_metro_distance(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_1'})
     metroDistance = td.find("div", attrs={'class': 'objects_item_metro'}).find_all("span")[1].get_text()
     metroDistanceMinute = re.search('\d+', metroDistance)
@@ -67,7 +69,8 @@ def getMetroDistane(tr):
     if printResult: print(distanceToMetro)
     return distanceToMetroUniversal
 
-def getAddress(tr):
+
+def get_address(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_1'})
     address = ""
     for addressField in td.find_all("div", attrs={'class': 'objects_item_addr'}):
@@ -75,13 +78,15 @@ def getAddress(tr):
     if printResult: print(address)
     return address
 
-def getRooms(tr):
+
+def get_rooms(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_2'}).find("a").get_text()
     howMuchRooms = td
     if printResult: print(howMuchRooms)
     return howMuchRooms
 
-def getSquareAll(tr):
+
+def get_square_all(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_3'}).find_all("td")
     mainSize = 0
     for square in td:
@@ -93,7 +98,8 @@ def getSquareAll(tr):
 
     return int(mainSize)
 
-def getSquareKitchen(tr):
+
+def get_square_kitchen(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_3'}).find_all("td")
     kitchenSize = 0
     for square in td:
@@ -104,7 +110,8 @@ def getSquareKitchen(tr):
             if printResult: print("Кухня:" + str(kitchenSize))
     return int(kitchenSize)
 
-def getSquareLive(tr):
+
+def get_square_live(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_3'}).find_all("td")
     liveSize = 0
     for square in td:
@@ -115,7 +122,8 @@ def getSquareLive(tr):
             if printResult: print("Жилая:" + str(liveSize))
     return int(liveSize)
 
-def getPriceRoubles(tr):
+
+def get_price_roubles(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_4'})
     priceRoubles = td.find('strong').get_text()
     priceRoublesDigit = re.findall('\d+',priceRoubles.strip())
@@ -126,7 +134,8 @@ def getPriceRoubles(tr):
     if printResult: print("стоимость в рублях:" + str(priceRoubles))
     return priceRoubles
 
-def getPriceDollars(tr):
+
+def get_price_dollars(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_4'})
     priceDollars = td.find('div', attrs={'class':'objects_item_second_price'}).get_text()
     priceDollarsDigit = re.findall('\d+',priceDollars.strip())
@@ -137,7 +146,8 @@ def getPriceDollars(tr):
     if printResult: print("стоимость в долларах:" + str(priceDollars))
     return priceDollars
 
-def getPricePerMeter(tr):
+
+def get_price_per_meter(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_4'})
     pricePerMeter = td.find('div', attrs={'style':'color:green;'})
     pricePerMeter=pricePerMeter.get_text().strip()[3:]
@@ -149,7 +159,8 @@ def getPricePerMeter(tr):
     if printResult: print("цена в рублях за метр^2:" + str(pricePerMeter))
     return pricePerMeter
 
-def getBuildingType(tr):
+
+def get_building_type(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_5'})
     houseType = td.find('div', attrs={'class':'objects_item_info_col_w'}).get_text()
     houseTypeStr = re.search(u'[-а-яА-Я]+', houseType)
@@ -157,7 +168,8 @@ def getBuildingType(tr):
     if printResult: print(houseType)
     return houseType
 
-def getFloor(tr):
+
+def get_floor(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_5'})
     floor = td.find('div', attrs={'class':'objects_item_info_col_w'}).get_text()
     floorInfo = re.search('\d+/*\d*',floor)
@@ -168,7 +180,8 @@ def getFloor(tr):
     if printResult: print("Этаж: " + str(floor))
     return floor
 
-def getFloorAll(tr):
+
+def get_floor_all(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_5'})
     floor = td.find('div', attrs={'class':'objects_item_info_col_w'}).get_text()
     floorAll = 0
@@ -180,7 +193,8 @@ def getFloorAll(tr):
     if printResult and floorAll: print("Этажность:" + str(floorAll))
     return floorAll
 
-def getAdditionalProperties(tr):
+
+def get_additional_properties(tr):
     td = tr.find("td", attrs={'class':'objects_item_info_col_6'})
     td = td.find("table", attrs={'class':'objects_item_details'})
     td = td.find_all("td")
@@ -222,51 +236,61 @@ def getAdditionalProperties(tr):
     return [lift, balcon, windowStreet, windowBackyard, phone]
 
 
-
-def getInfo(tr):
-    number = getNumber(tr)
+def get_info(tr):
+    number = get_number(tr)
     print(number)
-    metroStation = getMetroStation(tr)
-    metroDistance = getMetroDistane(tr)
-    address = getAddress(tr)
-    rooms = getRooms(tr)
-    squareAll = getSquareAll(tr)
-    squareKitchen = getSquareKitchen(tr)
-    squareLive = getSquareLive(tr)
+    metro_station = get_metro_station(tr)
+    metro_distance = get_metro_distance(tr)
+    address = get_address(tr)
+    rooms = get_rooms(tr)
+    square_all = get_square_all(tr)
+    square_kitchen = get_square_kitchen(tr)
+    square_live = get_square_live(tr)
     # fix cian bug
-    if squareKitchen + squareLive > squareAll:
-        squareKitchen = 0
-        squareLive = 0
-    priceRoubles = getPriceRoubles(tr)
-    priceDollars = getPriceDollars(tr)
-    pricePerMeter = getPricePerMeter(tr)
-    buildingType = getBuildingType(tr)
-    floor = getFloor(tr)
-    floorAll = getFloorAll(tr)
-    ap = getAdditionalProperties(tr)
-    fullInfo = str(number)  +","+ metroStation.encode('utf-8') +","+ str(metroDistance) +',"'+ address.encode('utf-8') +'",'+ rooms.encode('utf-8') +","+ str(squareAll) +","+ str(squareKitchen) +","+ str(squareLive) +","+ str(priceRoubles) +","+ str(priceDollars) +","+ str(pricePerMeter) +","+ buildingType +","+ str(floor) +","+ str(floorAll) +","+ str(ap[0]) +","+ str(ap[1]) +","+ str(ap[2]) +","+ str(ap[3]) +','+str(ap[4]) +'\n'
-    fullInfo = fullInfo.decode('utf-8')
-    file = codecs.open("6roomsflat.csv", "a", "utf-8")
-    file.write(fullInfo)
-    file.close()
+    if square_kitchen + square_live > square_all:
+        square_kitchen = 0
+        square_live = 0
+    price_roubles = get_price_roubles(tr)
+    price_dollars = get_price_dollars(tr)
+    price_per_meter = get_price_per_meter(tr)
+    building_type = get_building_type(tr)
+    floor = get_floor(tr)
+    floor_all = get_floor_all(tr)
+    ap = get_additional_properties(tr)
+    full_info = str(number) + "," + metro_station.encode('utf-8') + "," + str(metro_distance) + ',"' +\
+                address.encode('utf-8') + '",' + rooms.encode('utf-8') + "," + str(square_all) + "," +\
+                str(square_kitchen) + "," + str(square_live) + "," + str(price_roubles) + "," + str(price_dollars) + \
+                "," + str(price_per_meter) + "," + building_type + "," + str(floor) + "," + str(floor_all) + "," \
+                + str(ap[0]) + "," + str(ap[1]) + "," + str(ap[2]) + "," + str(ap[3]) + ',' +str(ap[4]) + '\n'
+    full_info = full_info.decode('utf-8')
+    print("saving file")
+    file_table = codecs.open("6roomsflat.csv", "a", "utf-8")
+    file_table.write(full_info)
+    file_table.close()
+
+
 
 
 LINKORIGINAL = 'http://www.cian.ru/cat.php?deal_type=2&obl_id=1&city%5B0%5D=1&room6=1&sost_type=1&object_type=1&p='
-for pageNumber in range(48):
+for page_number in range(2, 3):
     time.sleep(2)
     LINK = LINKORIGINAL
-    if pageNumber == 0: continue
-    if pageNumber == 1:
+    if page_number == 0:
+        continue
+    if page_number == 1:
         LINK = LINK[:-3]
     else:
-        LINK +=str(pageNumber)
-    page = loadHelper(LINK)
+        LINK += str(page_number)
+    page = load_helper(LINK)
 
-    trAll = page.find_all("tr", attrs={'class':'offer_container'})
+    tr_all = page.find_all("div", attrs={'class': re.compile('offer_container')})
+    print tr_all[5]
 
-    for tr in trAll:
-        try:
-            getInfo(tr)
-        except Exception, e:
-            print("error")
-            pass
+    #for tr in tr_all:
+        #get_metro_distance(tr)
+    #     try:
+    #         print(tr)
+    #         getInfo(tr)
+    #     except Exception:
+    #         print("error")
+    #         pass
