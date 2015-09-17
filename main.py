@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 __author__ = 'onotole'
 printResult = 1
 from bs4 import BeautifulSoup
